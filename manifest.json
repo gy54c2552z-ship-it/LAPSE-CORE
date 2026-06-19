@@ -1,0 +1,22 @@
+{
+  "name": "LAPSE CORE",
+  "short_name": "LAPSE CORE",
+  "description": "水泳用ラップタイム計測・記録管理PWAアプリ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "lang": "ja",
+  "icons": [
+    { "src": "./icon-120.png", "sizes": "120x120", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "prefer_related_applications": false
+}
