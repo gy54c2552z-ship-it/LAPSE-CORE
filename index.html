@@ -1152,9 +1152,16 @@ body.theme-white{
   background:var(--bg2);width:100%;
   border-radius:18px 18px 0 0;
   padding:20px 20px max(env(safe-area-inset-bottom,20px),20px);
-  max-height:min(85vh, 420px);overflow-y:auto;
+  max-height:min(85vh, 420px);
+  display:flex;flex-direction:column;
   transition:transform .15s ease;
 }
+/* シート内の実コンテンツだけをスクロール対象にする。ボタン行(.sl-prompt-btns)は
+   このスクロール領域の「外」に置くことで、内容が長くて入りきらない場合でも
+   ボタンが必ず画面内に見え続けるようにする（以前はposition:stickyで対応していたが、
+   初期スクロール位置が先頭のままだとボタンが画面外に残ってしまうケースがあったため、
+   スクロール領域そのものを分離する、より確実な方式に変更した）。 */
+.sl-prompt-scroll{overflow-y:auto;flex:1 1 auto;min-height:0;}
 .sl-prompt-title{font-size:calc(18px * var(--fs-scale));font-weight:700;color:var(--txt);margin-bottom:4px;}
 .sl-prompt-sub{font-size:calc(13px * var(--fs-scale));color:var(--txt3);margin-bottom:16px;line-height:1.5;}
 .sl-prompt-label{font-size:calc(12px * var(--fs-scale));color:var(--txt3);margin-bottom:6px;font-weight:500;}
@@ -1180,7 +1187,7 @@ body.theme-white{
 .sl-team-err{
   min-height:16px;font-size:calc(12px * var(--fs-scale));color:#ff453a;margin-top:6px;
 }
-.sl-prompt-btns{display:flex;gap:10px;margin-top:10px;position:sticky;bottom:0;background:var(--bg2);padding-top:6px;}
+.sl-prompt-btns{display:flex;gap:10px;margin-top:10px;flex:none;background:var(--bg2);padding-top:6px;}
 .sl-prompt-cancel{
   flex:1;padding:13px;background:var(--bg3);color:var(--txt);
   border:none;border-radius:10px;font-size:calc(16px * var(--fs-scale));cursor:pointer;
@@ -1827,14 +1834,16 @@ body.theme-white .diff-badge.behind{background:#fde8e8;color:#c0392b;}
   <!-- 手動で大会を追加する時の、大会名だけを聞く簡易シート -->
   <div class="sl-prompt-overlay" id="slManualPromptOverlay" onclick="slCancelManualPrompt()">
     <div class="sl-prompt-sheet" onclick="event.stopPropagation()">
-      <div class="sl-prompt-title">大会を追加</div>
-      <div class="sl-prompt-sub">大会名を入力してください</div>
-      <div class="sl-prompt-label">大会名（フォルダ名） <span style="color:#ff453a;">※必須</span></div>
-      <input class="sl-team-input" id="slManualCompName" placeholder="例: 近畿学生水泳選手権"
-        autocomplete="off" autocapitalize="off" spellcheck="false"
-        oninput="slClearManualCompErr()"
-        onkeydown="if(event.key==='Enter'){ event.preventDefault(); slManualPromptOK(); }">
-      <div class="sl-team-err" id="slManualCompErr"></div>
+      <div class="sl-prompt-scroll">
+        <div class="sl-prompt-title">大会を追加</div>
+        <div class="sl-prompt-sub">大会名を入力してください</div>
+        <div class="sl-prompt-label">大会名（フォルダ名） <span style="color:#ff453a;">※必須</span></div>
+        <input class="sl-team-input" id="slManualCompName" placeholder="例: 近畿学生水泳選手権"
+          autocomplete="off" autocapitalize="off" spellcheck="false"
+          oninput="slClearManualCompErr()"
+          onkeydown="if(event.key==='Enter'){ event.preventDefault(); slManualPromptOK(); }">
+        <div class="sl-team-err" id="slManualCompErr"></div>
+      </div>
       <div class="sl-prompt-btns">
         <button class="sl-prompt-cancel" onclick="slCancelManualPrompt()" data-i="cancel">キャンセル</button>
         <button class="sl-prompt-ok"     onclick="slManualPromptOK()">OK</button>
@@ -1845,18 +1854,20 @@ body.theme-white .diff-badge.behind{background:#fde8e8;color:#c0392b;}
   <!-- チーム名入力シート（複数チーム追加対応・背景タップで閉じる） -->
   <div class="sl-prompt-overlay" id="slPromptOverlay" onclick="slCancelPrompt()">
     <div class="sl-prompt-sheet" onclick="event.stopPropagation()">
-      <div class="sl-prompt-title">大会を追加</div>
-      <div class="sl-prompt-sub">大会名とチーム名を入力してください</div>
-      <div class="sl-prompt-label">大会名（フォルダ名） <span style="color:#ff453a;">※必須</span></div>
-      <input class="sl-team-input" id="slCompName" placeholder="例: 近畿学生水泳選手権"
-        oninput="slClearCompNameErr()"
-        onkeydown="if(event.key==='Enter'){ event.preventDefault(); document.getElementById('slTeamName')?.focus(); }">
-      <div class="sl-team-err" id="slCompNameErr"></div>
-      <div class="sl-prompt-label" style="margin-top:12px;">チーム名 <span style="color:#ff453a;">※必須</span></div>
-      <input class="sl-team-input" id="slTeamName" placeholder="例: 東京大学SC"
-        oninput="slClearTeamNameErr()"
-        onkeydown="if(event.key==='Enter'){ event.preventDefault(); slStartAnalyze(); }">
-      <div class="sl-team-err" id="slTeamNameErr"></div>
+      <div class="sl-prompt-scroll">
+        <div class="sl-prompt-title">大会を追加</div>
+        <div class="sl-prompt-sub">大会名とチーム名を入力してください</div>
+        <div class="sl-prompt-label">大会名（フォルダ名） <span style="color:#ff453a;">※必須</span></div>
+        <input class="sl-team-input" id="slCompName" placeholder="例: 近畿学生水泳選手権"
+          oninput="slClearCompNameErr()"
+          onkeydown="if(event.key==='Enter'){ event.preventDefault(); document.getElementById('slTeamName')?.focus(); }">
+        <div class="sl-team-err" id="slCompNameErr"></div>
+        <div class="sl-prompt-label" style="margin-top:12px;">チーム名 <span style="color:#ff453a;">※必須</span></div>
+        <input class="sl-team-input" id="slTeamName" placeholder="例: 東京大学SC"
+          oninput="slClearTeamNameErr()"
+          onkeydown="if(event.key==='Enter'){ event.preventDefault(); slStartAnalyze(); }">
+        <div class="sl-team-err" id="slTeamNameErr"></div>
+      </div>
       <div class="sl-prompt-btns">
         <button class="sl-prompt-cancel" onclick="slCancelPrompt()" data-i="cancel">キャンセル</button>
         <button class="sl-prompt-ok"     onclick="slStartAnalyze()">解析開始</button>
@@ -2441,6 +2452,9 @@ body.theme-white .diff-badge.behind{background:#fde8e8;color:#c0392b;}
     <div class="settings-card">
       <div class="settings-option" onclick="document.getElementById('stdAdminFileInput').click()">
         <span>📷 画像/PDFを選んでAIで読み込む</span>
+      </div>
+      <div class="settings-option" onclick="stdAdminManualStart()">
+        <span>✏️ 手動で入力する（AIを使わない）</span>
       </div>
     </div>
     <div id="stdAdminStatus" style="font-size:calc(13px * var(--fs-scale));color:var(--txt3);padding:8px 2px;"></div>
@@ -3172,7 +3186,17 @@ body.theme-white .diff-badge.behind{background:#fde8e8;color:#c0392b;}
       <div class="form-group">
         <div class="form-row"><span class="form-label">タイム</span><input class="form-input" id="bpeTime" autocomplete="off" placeholder="00:00.00" style="margin-left:auto;text-align:right;"></div>
       </div>
-      <div style="padding:4px 20px 16px;font-size:calc(11px * var(--fs-scale));color:var(--txt4,#999);">※ラップは元のOCR結果をそのまま使用します（このオーバーレイでは編集できません）。</div>
+      <div class="form-group" style="padding:14px 20px 6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span class="form-label" style="font-weight:600;">ラップタイム</span>
+          <button type="button" onclick="_bpAddLapRow()" style="background:none;border:none;color:#0a84ff;font-size:calc(14px * var(--fs-scale));cursor:pointer;padding:4px 6px;">＋ ラップを追加</button>
+        </div>
+        <div id="bpeLapsWrap"></div>
+        <div style="font-size:calc(11px * var(--fs-scale));color:var(--txt4,#999);margin-top:4px;">
+          距離は「50」のように数値のみ、通過タイムは「1:01.18」または「28.86」の形式で入力してください。
+          OCRで読み取れなかった場合は、ここで手動で追加・修正できます。
+        </div>
+      </div>
       <div style="height:16px;"></div>
     </div>
   </div>
@@ -8199,6 +8223,38 @@ function _bestPhotoParseOcrText(text){
   for(const m of raw.matchAll(/(\d{1,3}:\d{1,2}\.\d{1,2})\s*(?:\d{1,3}:\d{1,2}\.\d{1,2}\s*)?[\r\n]+\s*(\d{1,4})\s*m\b/g)){
     _bpAddLap(m[2], m[1]);
   }
+  // (c) 「距離｜通過タイム｜50m｜100m｜200m」の結合セル表では、Tesseractが縦の罫線を境目に
+  //     列ごとバラバラの塊として読んでしまい、(a)(b)どちらの並びにもならないことがある
+  //     （例：「50m 100m 150m 200m…」という距離だけの塊の後に、離れた場所で
+  //     「0:28.86 1:01.18 1:34.00 2:07.40…」という通過タイムだけの塊が続く）。
+  //     この場合、(a)(b)で1件も拾えていなければ、文書全体から「距離の並び」と
+  //     「通過タイムの並び」をそれぞれ別々に抽出し、出現順で先頭から順にペアにする
+  //     （＝一番左の「距離」列と「通過タイム」列だけを当てにする。右側の50m/100m/200mの
+  //     区間タイム列は複雑な結合セルで誤読の元になりやすいため、あえて無視する）。
+  if(laps.length===0){
+    const distList=[...raw.matchAll(/\b(\d{1,4})\s*m\b/g)].map(m=>parseInt(m[1],10));
+    const timeList=[...raw.matchAll(/\d{1,3}:\d{1,2}\.\d{1,2}/g)].map(s=>_bpParseTimeToMs(s[0]));
+    // 距離は50m刻み等で単調増加するはず。単調増加でなくなった時点（＝別の数値列に
+    // 迷い込んだと判断できる時点）で距離リストを打ち切る
+    const distsClean=[];
+    for(const d of distList){
+      if(distsClean.length && d<=distsClean[distsClean.length-1]) break;
+      distsClean.push(d);
+    }
+    // 通過タイム（累積）も同様に単調増加のはずなので、増加が止まった時点で打ち切る
+    const timesClean=[];
+    for(const t of timeList){
+      if(timesClean.length && t<=timesClean[timesClean.length-1]) break;
+      timesClean.push(t);
+    }
+    const n=Math.min(distsClean.length, timesClean.length);
+    for(let i=0;i<n;i++){
+      const dist=distsClean[i];
+      if(!dist || seenDist.has(dist)) continue;
+      seenDist.add(dist);
+      laps.push({dist, split:timesClean[i]});
+    }
+  }
   laps.sort((a,b)=>a.dist-b.dist);
   // 種目からわかる総距離を大きく超える距離は、OCRの誤読（桁のズレ等）とみなして除外する
   const totalDist=parseInt((event||'').match(/\d+/)?.[0]||'0',10);
@@ -8296,6 +8352,7 @@ function closeBestPhotoReview(){
 }
 // 確認画面：複数選択で読み込み対象から一括除外するためのモード（記録一覧の「選択」と同じ仕様）
 let _bpSelMode=false, _bpSelSet=new Set(), _bpEditIdx=-1;
+let _bpEditLaps=[]; // 解析結果の編集オーバーレイで、ラップを一時的に編集するための配列（「完了」を押すまでdには反映しない）
 
 /** 確認画面の一覧。入力欄ではなく「記録一覧の個人名」と同じ見た目の行（rec-item）にし、
  *  タップすると _bpOpenDraftEdit() で詳細編集オーバーレイを開く。選択モード中はタップで
@@ -8351,8 +8408,40 @@ function _bpOpenDraftEdit(i){
   document.getElementById('bpeRt').value=d.rt||'';
   document.getElementById('bpeComment').value=d.round||'';
   document.getElementById('bpeTime').value=d.timeMs?fmt2(d.timeMs):'';
+  _bpEditLaps=(d.laps||[]).map(l=>({dist:l.dist, split:l.split})); // ディープコピー（「‹」で戻ればdには反映されない）
+  _bpRenderLapsEditor();
   document.getElementById('bestPhotoReviewOverlay').classList.remove('on');
   document.getElementById('bpDraftEditOverlay').classList.add('on');
+}
+/** ラップ編集UIを描画する（行の追加・削除の度に呼び直す。1文字入力ごとには呼ばない＝入力中にフォーカスが飛ばないようにするため） */
+function _bpRenderLapsEditor(){
+  const wrap=document.getElementById('bpeLapsWrap');
+  if(!wrap) return;
+  if(!_bpEditLaps.length){
+    wrap.innerHTML=`<div style="font-size:calc(13px * var(--fs-scale));color:var(--txt3);padding:8px 0;">ラップがありません（「＋ ラップを追加」から追加できます）</div>`;
+    return;
+  }
+  wrap.innerHTML=_bpEditLaps.map((l,i)=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+      <input class="form-input" style="width:64px;flex:none;text-align:right;" value="${l.dist||''}"
+        placeholder="距離" inputmode="numeric"
+        onchange="_bpEditLaps[${i}].dist=parseInt(this.value,10)||0">
+      <span style="color:var(--txt3);flex:none;">m</span>
+      <input class="form-input" style="flex:1;" value="${l.split?fmt2(l.split):''}"
+        placeholder="通過タイム 例: 1:01.18"
+        onchange="_bpEditLaps[${i}].split=rlParseTime(this.value)">
+      <button type="button" onclick="_bpDeleteLapRow(${i})" style="background:none;border:none;color:#ff453a;font-size:calc(20px * var(--fs-scale));line-height:1;cursor:pointer;padding:2px 6px;flex:none;">×</button>
+    </div>`).join('');
+}
+/** 「＋ ラップを追加」：距離・タイムとも空の行を末尾に追加する */
+function _bpAddLapRow(){
+  _bpEditLaps.push({dist:0, split:0});
+  _bpRenderLapsEditor();
+}
+/** ラップ行を削除する */
+function _bpDeleteLapRow(i){
+  _bpEditLaps.splice(i,1);
+  _bpRenderLapsEditor();
 }
 function _bpSetEditPool(p){
   document.getElementById('bpePool25').classList.toggle('active', p===25);
@@ -8376,11 +8465,15 @@ function _bpDraftEditDone(){
   d.poolNum=document.getElementById('bpePool25').classList.contains('active')?25:50;
   d.rt=document.getElementById('bpeRt').value.trim();
   d.round=document.getElementById('bpeComment').value.trim();
+  // 編集中のラップ配列を反映する（距離・通過タイムのどちらかが未入力の行は保存しない）
+  d.laps=_bpEditLaps.filter(l=>l.dist>0 && l.split>0).sort((a,b)=>a.dist-b.dist);
   const ms=rlParseTime(document.getElementById('bpeTime').value);
   if(ms>0){
-    if(d.laps && d.laps.length){ d.laps[d.laps.length-1].split=ms; }
-    else { d.laps=[{dist:parseInt((d.event||'').match(/\d+/)?.[0]||'0',10), split:ms}]; }
     d.timeMs=ms;
+    if(d.laps.length){ d.laps[d.laps.length-1].split=ms; } // 最終ラップをタイム欄の値に揃える
+    else { d.laps=[{dist:parseInt((d.event||'').match(/\d+/)?.[0]||'0',10), split:ms}]; }
+  }else if(d.laps.length){
+    d.timeMs=d.laps[d.laps.length-1].split; // タイム欄が空でも、ラップの最終値からタイムを補完する
   }
   closeBpDraftEdit();
   renderBestPhotoReview();
@@ -10852,22 +10945,29 @@ function slClearManualCompErr(){
 }
 /** スマホでキーボードが開いた時、position:fixedのシート（.sl-prompt-sheet）が
  *  キーボードの下に隠れて、キャンセル/OKボタンまで見えなくなる問題への対処。
- *  VisualViewport APIで「キーボードに隠れている高さ」を算出し、シート自体を
- *  その分だけtransformで真上に持ち上げることで、常にボタンまで見えるようにする。
- *  visualViewportのresize/scrollイベントだけに頼ると、端末によっては発火タイミングが
- *  ずれて反映が遅れることがあるため、各入力欄のfocus時にも直接呼び出して二重に保険をかける。 */
+ *  【方式変更】以前はキーボードの高さぶんだけシートをtransformで持ち上げる方式だったが、
+ *  ホーム画面に追加したPWA（スタンドアロン表示）環境では、キーボード開閉時に
+ *  visualViewportのresizeイベントが発火しない（＝計算のきっかけ自体が来ない）ことが
+ *  あるとわかった。そこで、オーバーレイ自体の高さを「実際に見えている範囲
+ *  （visualViewport.height。無ければwindow.innerHeight）」に合わせて縮める方式に変更し、
+ *  かつvisualViewportのresize/scrollに加えて、windowのresizeイベントも二重に監視することで、
+ *  どちらか一方が発火しない環境でも取りこぼさないようにしている。
+ *  オーバーレイは align-items:flex-end のため、高さを縮めるだけでシート（および中の
+ *  ボタン）が自動的にキーボードのすぐ上に来る。 */
 let _slApplyKeyboardFix = () => {};
 function _slFixPromptOverlaysForKeyboard(){
-  if(!window.visualViewport) return; // 対応していない環境ではCSSの元の挙動のまま
-  const vv = window.visualViewport;
   _slApplyKeyboardFix = () => {
-    const kbHeight = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-    document.querySelectorAll('.sl-prompt-sheet').forEach(el=>{
-      el.style.transform = kbHeight > 8 ? `translateY(-${kbHeight + 12}px)` : '';
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.querySelectorAll('.sl-prompt-overlay').forEach(el=>{
+      el.style.height = vh + 'px';
     });
   };
-  vv.addEventListener('resize', _slApplyKeyboardFix);
-  vv.addEventListener('scroll', _slApplyKeyboardFix);
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', _slApplyKeyboardFix);
+    window.visualViewport.addEventListener('scroll', _slApplyKeyboardFix);
+  }
+  window.addEventListener('resize', _slApplyKeyboardFix); // ← 保険（PWA環境でvisualViewportが効かない場合の代替経路）
+  window.addEventListener('orientationchange', ()=>setTimeout(_slApplyKeyboardFix, 300));
   _slApplyKeyboardFix();
 }
 _slFixPromptOverlaysForKeyboard();
@@ -11754,7 +11854,11 @@ async function stdAdminRunOcr(){
   }
 }
 
-/** _stdAdminDraft の内容を、編集可能なテーブルとして描画する */
+/** _stdAdminDraft の内容を、編集可能なテーブルとして描画する。
+ *  【変更】AI読み取り結果がある種目だけでなく、7種目すべてを常に表示するようにした
+ *  （AIを使わず手動で0から入力する場合にも、全種目の入力欄が最初から見えるように）。
+ *  見出しの色は、Best一覧「専門種目のみ表示」の学年色分けと同じパレット（RL_GRADE_COLORS）を
+ *  種目ごとに割り当てて使い回し、7種目がひと目で見分けられる鮮やかな配色にしている。 */
 function stdAdminRenderDraftTable(){
   const wrap = document.getElementById('stdAdminDraftWrap');
   const tablesEl = document.getElementById('stdAdminDraftTables');
@@ -11764,24 +11868,43 @@ function stdAdminRenderDraftTable(){
   let html = `<div class="settings-card">
     <div class="settings-card-header">大会名</div>
     <input type="text" id="stdAdminCompNameInput" value="${escAttr(_stdAdminDraft.compName||'')}"
+      placeholder="例：第94回 日本高等学校選手権水泳競技大会"
       style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border3);background:var(--bg3);color:var(--txt);font-size:calc(14px * var(--fs-scale));"
       onchange="_stdAdminDraft.compName=this.value">
   </div>`;
 
-  STD_RECORD_STROKES.forEach(stroke=>{
+  STD_RECORD_STROKES.forEach((stroke,si)=>{
+    if(!_stdAdminDraft.strokes[stroke]) _stdAdminDraft.strokes[stroke]=[];
     const rows = _stdAdminDraft.strokes[stroke];
-    if(!rows || !rows.length) return;
-    html += `<div class="settings-card"><div class="settings-card-header">${escHtml(stroke)}</div>
-      <table style="width:100%;border-collapse:collapse;font-size:calc(13px * var(--fs-scale));">
-      <tr style="color:var(--txt3);"><td style="padding:4px;">距離</td><td style="padding:4px;">男子</td><td style="padding:4px;">女子</td></tr>`;
-    rows.forEach((row,ri)=>{
-      html += `<tr>
-        <td style="padding:3px;"><input value="${escAttr(row.distance||'')}" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border3);background:var(--bg3);color:var(--txt);" onchange="_stdAdminEditCell('${stroke}',${ri},'distance',this.value)"></td>
-        <td style="padding:3px;"><input value="${escAttr(row.male||'')}" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border3);background:var(--bg3);color:var(--txt);" onchange="_stdAdminEditCell('${stroke}',${ri},'male',this.value)"></td>
-        <td style="padding:3px;"><input value="${escAttr(row.female||'')}" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border3);background:var(--bg3);color:var(--txt);" onchange="_stdAdminEditCell('${stroke}',${ri},'female',this.value)"></td>
-      </tr>`;
-    });
-    html += `</table></div>`;
+    const color = RL_GRADE_COLORS[si % RL_GRADE_COLORS.length];
+    html += `<div class="settings-card">
+      <div class="settings-card-header" style="background:${color};color:#1c1c1e;border-radius:8px;padding:6px 10px;font-weight:700;">${escHtml(stroke)}</div>`;
+    if(rows.length){
+      html += `<table style="width:100%;border-collapse:collapse;font-size:calc(12px * var(--fs-scale));">
+        <tr style="color:var(--txt3);">
+          <td rowspan="2" style="padding:4px;vertical-align:bottom;">距離</td>
+          <td colspan="2" style="padding:4px;text-align:center;">男子</td>
+          <td colspan="2" style="padding:4px;text-align:center;">女子</td>
+          <td rowspan="2" style="width:30px;"></td>
+        </tr>
+        <tr style="color:var(--txt3);">
+          <td style="padding:2px 4px;text-align:center;">短水路</td><td style="padding:2px 4px;text-align:center;">長水路</td>
+          <td style="padding:2px 4px;text-align:center;">短水路</td><td style="padding:2px 4px;text-align:center;">長水路</td>
+        </tr>`;
+      rows.forEach((row,ri)=>{
+        const cell=(field,ph)=>`<td style="padding:3px;"><input value="${escAttr(row[field]||'')}" placeholder="${ph}" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border3);background:var(--bg3);color:var(--txt);text-align:center;" onchange="_stdAdminEditCell('${stroke}',${ri},'${field}',this.value)"></td>`;
+        html += `<tr>
+          <td style="padding:3px;"><input value="${escAttr(row.distance||'')}" placeholder="例:50m" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--border3);background:var(--bg3);color:var(--txt);" onchange="_stdAdminEditCell('${stroke}',${ri},'distance',this.value)"></td>
+          ${cell('male_scy','24.09')}${cell('male','22.82')}
+          ${cell('female_scy','26.99')}${cell('female','25.96')}
+          <td style="padding:3px;text-align:center;"><button type="button" onclick="_stdAdminDeleteRow('${stroke}',${ri})" style="background:none;border:none;color:#ff453a;font-size:calc(18px * var(--fs-scale));cursor:pointer;">×</button></td>
+        </tr>`;
+      });
+      html += `</table>`;
+    }
+    html += `<div style="text-align:right;padding:6px 2px 2px;">
+      <button type="button" onclick="_stdAdminAddRow('${stroke}')" style="background:none;border:none;color:#0a84ff;font-size:calc(14px * var(--fs-scale));cursor:pointer;">＋ 距離を追加</button>
+    </div></div>`;
   });
   tablesEl.innerHTML = html;
 }
@@ -11789,6 +11912,27 @@ function stdAdminRenderDraftTable(){
 function _stdAdminEditCell(stroke, rowIndex, field, value){
   if(!_stdAdminDraft || !_stdAdminDraft.strokes[stroke]) return;
   _stdAdminDraft.strokes[stroke][rowIndex][field] = value.trim()===''? null : value.trim();
+}
+/** 「＋ 距離を追加」：その種目に、空の行を1行追加する */
+function _stdAdminAddRow(stroke){
+  if(!_stdAdminDraft) return;
+  if(!_stdAdminDraft.strokes[stroke]) _stdAdminDraft.strokes[stroke]=[];
+  _stdAdminDraft.strokes[stroke].push({distance:'', male:'', male_scy:'', female:'', female_scy:''});
+  stdAdminRenderDraftTable();
+}
+/** その種目の1行を削除する */
+function _stdAdminDeleteRow(stroke, rowIndex){
+  if(!_stdAdminDraft || !_stdAdminDraft.strokes[stroke]) return;
+  _stdAdminDraft.strokes[stroke].splice(rowIndex,1);
+  stdAdminRenderDraftTable();
+}
+/** 「✏️ 手動で入力する（AIを使わない）」：OCRを一切使わず、空の下書きから直接テーブルを開始する */
+function stdAdminManualStart(){
+  const statusEl = document.getElementById('stdAdminStatus');
+  _stdAdminDraft = { compName:'', strokes:{} };
+  STD_RECORD_STROKES.forEach(stroke=>{ _stdAdminDraft.strokes[stroke]=[]; });
+  if(statusEl) statusEl.textContent = '手動入力モードです。各種目の「＋ 距離を追加」から入力してください。';
+  stdAdminRenderDraftTable();
 }
 
 /** 確認済みの内容で standardRecords/{competitionKey} を丸ごと上書きする */
@@ -11922,6 +12066,8 @@ async function stdRecordsOpenComp(key){
     }
     const d = doc.data();
     if(titleEl) titleEl.textContent = d.compName || (comp ? comp.label : '大会');
+    _stdDetailKey = key;   // 編集して保存する時に、どのcompetitionKeyへ書き込むか特定するため保持
+    _stdDetailData = d;    // 編集して保存する時に、配列(strokes[stroke])を丸ごと書き戻すため保持
     stdRecordsRenderDetail(d);
   }catch(e){
     console.error('[stdRecordsOpenComp]', e);
@@ -11929,28 +12075,43 @@ async function stdRecordsOpenComp(key){
   }
 }
 
-/** 標準記録データを、自己ベストとの比較つきで描画する（選手ログイン時のみ「あなた」列を出す） */
+let _stdDetailKey = null;   // 今表示中のcompetitionKey（編集保存時の書き込み先）
+let _stdDetailData = null;  // 今表示中のdoc内容（strokes配列を編集して丸ごと書き戻すために保持）
+let _stdEditActive = null;  // {stroke, rowIndex, field, cellId} 現在インライン編集中のセル
+
+/** 標準記録データを、自己ベストとの比較つきで描画する（選手ログイン時のみ「あなた」列を出す）。
+ *  【デザイン変更】距離｜男子(短水路/長水路)｜女子(短水路/長水路) の4列表に統一し、
+ *  種目の見出しはBest一覧と同じ鮮やかな配色（RL_GRADE_COLORS）、行はゼブラ柄に。
+ *  標準記録の管理者（_lcIsStdRecordAdmin）だけ、タイムのセルをタップするとその場で編集でき、
+ *  確定するとFirestoreに直接書き込まれて全ユーザーに即反映される（保存ボタンや確認画面を挟まない）。 */
 function stdRecordsRenderDetail(d){
   const bodyEl = document.getElementById('stdUserDetailBody');
   if(!bodyEl) return;
   const myGenderKey = _stdMyGender==='F' ? 'female' : (_stdMyGender==='M' ? 'male' : null);
+  const isAdmin = !!_lcIsStdRecordAdmin;
 
   let html = '';
-  STD_RECORD_STROKES.forEach(stroke=>{
+  STD_RECORD_STROKES.forEach((stroke,si)=>{
     const rows = (d.strokes||{})[stroke];
     if(!rows || !rows.length) return;
-    html += `<div class="settings-card"><div class="settings-card-header">${escHtml(stroke)}</div>
-      <table style="width:100%;border-collapse:collapse;font-size:calc(13px * var(--fs-scale));">
-      <tr style="color:var(--txt3);">
-        <td style="padding:6px 4px;">距離</td>
-        <td style="padding:6px 4px;">男子</td>
-        <td style="padding:6px 4px;">女子</td>
-        ${myGenderKey ? '<td style="padding:6px 4px;">あなた</td>' : ''}
-      </tr>`;
-    rows.forEach(row=>{
+    const color = RL_GRADE_COLORS[si % RL_GRADE_COLORS.length];
+    html += `<div style="background:var(--bg2);border-radius:14px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.15);">
+      <div style="background:${color};color:#1c1c1e;padding:10px 14px;font-weight:800;font-size:calc(15px * var(--fs-scale));letter-spacing:.02em;">${escHtml(stroke)}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:calc(12.5px * var(--fs-scale));">
+        <tr style="color:var(--txt3);border-bottom:1px solid var(--border3);">
+          <td rowspan="2" style="padding:6px 4px;vertical-align:bottom;font-weight:600;">距離</td>
+          <td colspan="2" style="padding:4px;text-align:center;font-weight:700;color:var(--txt2);">男子</td>
+          <td colspan="2" style="padding:4px;text-align:center;font-weight:700;color:var(--txt2);">女子</td>
+          ${myGenderKey ? '<td rowspan="2" style="padding:6px 4px;vertical-align:bottom;font-weight:600;">あなた</td>' : ''}
+        </tr>
+        <tr style="color:var(--txt4,#999);border-bottom:1px solid var(--border3);font-size:calc(10.5px * var(--fs-scale));">
+          <td style="padding:0 4px 4px;text-align:center;">短水路</td><td style="padding:0 4px 4px;text-align:center;">長水路</td>
+          <td style="padding:0 4px 4px;text-align:center;">短水路</td><td style="padding:0 4px 4px;text-align:center;">長水路</td>
+        </tr>`;
+    rows.forEach((row,ri)=>{
       let myCell = '';
       if(myGenderKey){
-        const standardStr = row[myGenderKey];
+        const standardStr = row[myGenderKey]; // 「あなた」欄は従来通り長水路基準の比較
         if(standardStr==null){
           myCell = '<td style="padding:6px 4px;color:var(--txt3);">-</td>';
         }else{
@@ -11962,22 +12123,71 @@ function stdRecordsRenderDetail(d){
             const diff = myBestMs - standardMs;
             const passed = diff <= 0;
             const diffStr = (passed?'-':'+') + Math.abs(diff/1000).toFixed(2);
-            const color = passed ? '#30d158' : 'var(--txt2)';
-            myCell = `<td style="padding:6px 4px;color:${color};font-weight:700;">${fmt2(myBestMs)}<div style="font-size:calc(11px * var(--fs-scale));font-weight:400;">${diffStr}</div></td>`;
+            const cColor = passed ? '#30d158' : 'var(--txt2)';
+            myCell = `<td style="padding:6px 4px;color:${cColor};font-weight:700;">${fmt2(myBestMs)}<div style="font-size:calc(10px * var(--fs-scale));font-weight:400;">${diffStr}</div></td>`;
           }
         }
       }
-      html += `<tr>
-        <td style="padding:6px 4px;">${escHtml(row.distance||'')}</td>
-        <td style="padding:6px 4px;">${row.male!=null?escHtml(row.male):'-'}</td>
-        <td style="padding:6px 4px;">${row.female!=null?escHtml(row.female):'-'}</td>
+      const tCell=(field)=>{
+        const cellId=`std_${stroke}_${ri}_${field}`;
+        const val=row[field];
+        const editable=isAdmin ? `onclick="_stdCellTap('${stroke}',${ri},'${field}','${cellId}')"` : '';
+        return `<td id="${cellId}" style="padding:6px 4px;text-align:center;${isAdmin?'cursor:pointer;border-radius:6px;':''}" ${editable}>${val!=null?escHtml(val):'<span style="color:var(--txt3);">-</span>'}</td>`;
+      };
+      html += `<tr style="${ri%2? 'background:var(--bg3);':''}">
+        <td style="padding:6px 4px;font-weight:600;">${escHtml(row.distance||'')}</td>
+        ${tCell('male_scy')}${tCell('male')}
+        ${tCell('female_scy')}${tCell('female')}
         ${myCell}
       </tr>`;
     });
     html += `</table></div>`;
   });
   if(!html) html = `<div style="padding:20px 2px;color:var(--txt3);">まだ準備中です。</div>`;
+  if(isAdmin) html = `<div style="padding:2px 2px 12px;font-size:calc(11px * var(--fs-scale));color:var(--txt3);">✏️ 管理者モード：タイムをタップすると編集できます</div>` + html;
   bodyEl.innerHTML = html;
+}
+
+/** タイムのセルをタップ（管理者のみ）：その場で入力欄に差し替える */
+function _stdCellTap(stroke, rowIndex, field, cellId){
+  if(_stdEditActive && _stdEditActive.cellId!==cellId) _stdCommitCellEdit(); // 他のセルを編集中なら先に確定
+  const cell=document.getElementById(cellId); if(!cell) return;
+  const row=(_stdDetailData.strokes[stroke]||[])[rowIndex]; if(!row) return;
+  _stdEditActive={stroke,rowIndex,field,cellId};
+  const cur=row[field]!=null?row[field]:'';
+  cell.innerHTML=`<input value="${escAttr(cur)}" placeholder="00.00" inputmode="decimal"
+    style="width:64px;text-align:center;padding:5px 2px;border-radius:6px;border:1px solid #0a84ff;background:var(--bg3);color:var(--txt);font-size:inherit;"
+    onblur="_stdCommitCellEdit()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}else if(event.key==='Escape'){event.preventDefault();_stdCancelCellEdit();}">`;
+  const inp=cell.querySelector('input'); if(inp){inp.focus();inp.select();}
+}
+/** インライン編集を確定：Firestoreへ「その種目のstrokes配列」を丸ごと上書きする
+ *  （Firestoreは配列の特定要素だけをドット区切りパスで更新できないため、配列全体を書き戻す）。 */
+async function _stdCommitCellEdit(){
+  if(!_stdEditActive || !_stdDetailData || !_stdDetailKey) return;
+  const {stroke, rowIndex, field, cellId} = _stdEditActive;
+  _stdEditActive=null;
+  const cell=document.getElementById(cellId);
+  const inp=cell ? cell.querySelector('input') : null;
+  const raw = inp ? inp.value.trim() : '';
+  const row=(_stdDetailData.strokes[stroke]||[])[rowIndex];
+  if(!row){ stdRecordsRenderDetail(_stdDetailData); return; }
+  row[field] = raw===''? null : raw;
+  try{
+    await firebase.firestore().collection('standardRecords').doc(_stdDetailKey).update({
+      [`strokes.${stroke}`]: _stdDetailData.strokes[stroke],
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: (firebase.auth().currentUser||{}).uid || null,
+    });
+    showToast('✓ 保存しました（全員に反映されます）');
+  }catch(e){
+    console.error('[_stdCommitCellEdit]', e);
+    showToast('保存に失敗しました：'+e.message);
+  }
+  stdRecordsRenderDetail(_stdDetailData);
+}
+function _stdCancelCellEdit(){
+  _stdEditActive=null;
+  stdRecordsRenderDetail(_stdDetailData);
 }
 
 /** 自分の記録（savedRecords）から、指定の距離・泳法に一致する長水路(50m)のベストタイム(ms)を探す。
