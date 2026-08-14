@@ -6744,6 +6744,7 @@ function vaSyncResultToRecordList(reqData, result){
       pool: 25, laps: [], time: 0, rt:'', comment:'（動画解析のみ・タイム未計測）',
       relayNames: isRelay ? [name,'','',''] : null,
       label: name || ('Record'+(savedRecords.length+1)), fav:false,
+      createdAt:new Date().toISOString(), // 【今回追加】記録一覧の「新しい順」表示に使う
     };
     folders.forEach(f=>{ f.ids = f.ids.map(id=>id+1); });
     savedRecords.unshift(target);
@@ -11750,6 +11751,7 @@ function _onScreenEnter(id) {
   if (id === 'slDetail')    { renderSLDetail(); _lcAutoPullOnScreenOpen(_slReloadAndRenderDetail); }
   if (id === 'folderDetail') {
     recEditMode=false; recSelSet=new Set(); _curFolderDaySel=null; renderRecList();
+    _lcAutoPullOnScreenOpen(renderRecList); // 【今回追加】他の画面（記録一覧・スタートリスト等）と同じく、開くたびにクラウドの最新を確認する
     const btn=document.getElementById('recEditBtn');
     if(btn){
       // 【修正】以前は一度きりの_folderDetailFromSaveフラグを見ていたため、複数人保存直後の
@@ -13317,7 +13319,8 @@ function _buildAndSaveRecordFromCurrentState(fallbackFolderName){
     time:entryLaps.length?entryLaps[entryLaps.length-1].split:0,
     rt:formData.rt, comment:formData.comment, day:formData.day||null,
     relayNames: isRelay ? (formData.relayNames||[n,'','','']) : null,
-    label:n||('Record'+(savedRecords.length+1)), fav:false
+    label:n||('Record'+(savedRecords.length+1)), fav:false,
+    createdAt:new Date().toISOString() // 【今回追加】記録一覧の「新しい順」表示・チーム間同期後の並び替えに使う（4-4節参照）
   };
   // unshiftで先頭に追加する前に、既存フォルダが保持しているインデックスを
   // +1にずらして補正しておく（そうしないと全フォルダの中身がズレてしまう）
@@ -13527,6 +13530,21 @@ function renderRecList(){
     recIndices=recIndices.filter(i=>(savedRecords[i].day||1)===_curFolderDaySel);
   }
   let list=recIndices.map(idx=>({...savedRecords[idx], _idx:idx}));
+  // 【今回追加】新しい順（createdAtの降順）に並び替える。
+  // savedRecords配列自体の並び順は、他のチームメンバーが保存した記録がクラウド同期で
+  // 合流してくる際に「配列の末尾に追加される」仕様になっている（フォルダのインデックス参照を
+  // 壊さないための安全策、_mergeBackupBundleIntoLocalStorage参照）ため、単純に配列の並び順を
+  // そのまま表示すると、他のメンバーが最近保存した記録ほど下（＝古く見える位置）に埋もれてしまう。
+  // createdAtが無い古いデータ（この修正より前に保存された記録）は、比較対象が無い場合の
+  // フォールバックとして元の配列位置（_idx、小さいほど新しく保存された可能性が高い）を使う。
+  list.sort((a,b)=>{
+    const ta = a.createdAt ? Date.parse(a.createdAt) : NaN;
+    const tb = b.createdAt ? Date.parse(b.createdAt) : NaN;
+    if(!isNaN(ta) && !isNaN(tb)) return tb-ta;
+    if(!isNaN(ta)) return -1; // createdAtがある方を新しいとみなし優先
+    if(!isNaN(tb)) return 1;
+    return a._idx-b._idx;
+  });
   const q=document.getElementById('recSearchInput')?.value||'';
   if(q) list=list.filter(r=>(r.name+r.org+r.event+r.comp+r.date+r.label||'').toLowerCase().includes(q.toLowerCase()));
   if(!list.length){
